@@ -1,0 +1,47 @@
+{% extends "base/layout.html" %}
+{% block title %} Profile {% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">PROFILE</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-4 text-center">
+            <form method="POST" enctype="multipart/form-data">
+                <label for="profilePicUpload" style="cursor: pointer;">
+                    <img src="{{ url_for('static', filename='uploads/' + profile.profile_pic) }}" alt="Profile Picture"
+                         class="rounded-circle img-thumbnail" width="180" height="180">
+                </label>
+                <input type="file" name="profile_pic" id="profilePicUpload" style="display: none;" onchange="this.form.submit()">
+            </form>
+            <form id="profileForm" method="POST">
+                <input type="text" name="name" id="nameInput" class="form-control mt-3 text-center fw-bold"
+                       value="{{ user.name }}" readonly>
+        </div>
+
+        <div class="col-md-6 d-flex flex-column justify-content-center">
+            <textarea name="bio" id="bioInput" class="form-control mb-3" rows="5" readonly>{{ profile.bio or "No bio yet..." }}</textarea>
+
+            <div class="text-end">
+                <button type="button" id="editSaveBtn" class="btn btn-primary btn-sm">Edit</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const editBtn = document.getElementById("editSaveBtn");
+    const bioInput = document.getElementById("bioInput");
+    const nameInput = document.getElementById("nameInput");
+    const form = document.getElementById("profileForm");
+
+    editBtn.addEventListener("click", function () {
+        if (editBtn.textContent === "Edit") {
+            bioInput.removeAttribute("readonly");
+            nameInput.removeAttribute("readonly");
+            editBtn.textContent = "Save";
+        } else {
+            form.submit();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;  /* This ensures other elements on the left and right stay in place */
+    align-items: center;  /* This centers the items vertically */
+    margin-top: -20px;
+}
+
+/* Center the navbar-center div */
+.navbar-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;  /* Ensure it takes full width */
+    position: absolute;  /* Take it out of the normal flow */
+    left: 50%;  /* Move to the center */
+    transform: translateX(-50%);  /* Adjust back to truly center */
+}
+
+.navbar-center img {
+    max-width: 90px;  /* Optional: Control image size */
+    margin-right: 10px;  /* Optional: Adjust spacing between image and name */
+}
+
+.navbar-brand {
+    font-family: 'IBM Plex Mono';
+    font-size: 3rem; /* Make the PetBook name larger */
+}
+
+.navbar-nav{
+    margin-top: 120px;
+    justify-content: center;
+    margin-left: 550px;
+    gap: 20px;  /* Adjust the space between navbar items */
+}
+
+
+/* PROFILE */
+img.rounded-circle {
+    object-fit: cover;
+}
+
+
+/* ADOPTION LISTING */
+.adoption-image {
+    height: 300px;
+    object-fit: cover;
+    width: 100%;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+  

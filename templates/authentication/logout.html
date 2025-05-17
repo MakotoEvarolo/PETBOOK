@@ -1,0 +1,10 @@
+{% extends 'base/auth.html' %}
+{% block title %} Logged Out {% endblock %}
+{% block content %}
+<div class="card p-5 shadow-lg rounded">
+    <h2 class="mb-3">You Have Successfully Logged Out</h2>
+    <p class="lead text-muted">We hope to see you again soon!</p>
+    <br>
+    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login Again</a>
+</div>
+{% endblock %}

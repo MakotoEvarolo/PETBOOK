@@ -1,0 +1,76 @@
+{% extends "base/layout.html" %}
+{% block title %}Friends{% endblock %}
+{% block content %}
+<h2 class="mb-4">Friends</h2>
+
+<div class="row">
+  <!-- My Friends -->
+  <div class="col-md-4">
+    <h4>My Friends</h4>
+    <ul class="list-group">
+      {% for friend in current_friends %}
+        <li class="list-group-item d-flex align-items-center">
+          <img src="{{ url_for('static', filename='uploads/' + (friend.profile.profile_pic if friend.profile else 'default.png')) }}"
+               alt="Profile Picture" class="rounded-circle me-2"
+               style="width: 40px; height: 40px;">
+          <div>
+            <strong>{{ friend.username }}</strong><br>
+            <small>{{ friend.name }}</small>
+          </div>
+        </li>
+      {% else %}
+        <li class="list-group-item text-muted">No friends yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Friend Requests -->
+  <div class="col-md-4">
+    <h4>Friend Requests</h4>
+    <ul class="list-group">
+      {% for sender in request_senders %}
+        <li class="list-group-item d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            <img src="{{ url_for('static', filename='uploads/' + (sender.profile.profile_pic if sender.profile else 'default.png')) }}"
+                 alt="Profile Picture" class="rounded-circle me-2"
+                 style="width: 40px; height: 40px;">
+            <div>
+              <strong>{{ sender.username }}</strong><br>
+              <small>{{ sender.name }}</small>
+            </div>
+          </div>
+          <div>
+            <a href="{{ url_for('accept_friend_request', user_id=sender.id) }}" class="btn btn-success btn-sm">Accept</a>
+            <a href="{{ url_for('delete_friend_request', user_id=sender.id) }}" class="btn btn-danger btn-sm">Delete</a>
+          </div>
+        </li>
+      {% else %}
+        <li class="list-group-item text-muted">No pending requests.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Suggested Users -->
+  <div class="col-md-4">
+    <h4>Suggested People</h4>
+    <ul class="list-group">
+      {% for user in available_users %}
+        <li class="list-group-item d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            <img src="{{ url_for('static', filename='uploads/' + (user.profile.profile_pic if user.profile else 'default.png')) }}"
+                 alt="Profile Picture" class="rounded-circle me-2"
+                 style="width: 40px; height: 40px;">
+            <div>
+              <strong>{{ user.username }}</strong><br>
+              <small>{{ user.name }}</small>
+            </div>
+          </div>
+          <a href="{{ url_for('send_friend_request', user_id=user.id) }}" class="btn btn-primary btn-sm">Add Friend</a>
+        </li>
+      {% else %}
+        <li class="list-group-item text-muted">No users available to add.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base/layout.html" %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<h2>Your Notifications</h2>
+
+<form method="POST" action="{{ url_for('mark_notifications_read') }}" class="mb-3">
+  <button type="submit" class="btn btn-sm btn-outline-secondary">Mark all as read</button>
+</form>
+
+<ul class="list-group">
+  {% for note in notifications %}
+  <li class="list-group-item d-flex justify-content-between align-items-center {% if note.read_status == 'Unread' %}list-group-item-warning{% endif %}">
+    <div>
+      {{ note.message }}
+      {% if note.type == 'Adoption' and note.post_id %}
+      <form method="POST" action="{{ url_for('confirm_adoption', post_id=note.post_id) }}" class="d-inline-block ms-3">
+        <button type="submit" class="btn btn-sm btn-success">Confirm</button>
+      </form>
+      {% endif %}
+    </div>
+    <span class="badge bg-{{ 'secondary' if note.read_status == 'Read' else 'primary' }}">{{ note.read_status }}</span>
+  </li>
+  {% else %}
+  <li class="list-group-item">No notifications yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  fetch("{{ url_for('mark_notifications_read') }}", {
+    method: "POST"
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base/layout.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+{{ super() }}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">SETTINGS</h2>
+
+    <form method="POST" class="w-50 mx-auto">
+        <div class="mb-3">
+            <label for="name" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">New Password (leave blank to keep current)</label>
+            <input type="password" class="form-control" id="password" name="password">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Settings</button>
+    </form>
+</div>
+{% endblock %}

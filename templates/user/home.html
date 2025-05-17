@@ -1,0 +1,66 @@
+{% extends "base/layout.html" %}
+{% block title %}Welcome, {{ username }}!{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">News Feed</h2>
+
+<div class="d-flex flex-column gap-4">
+
+  {% for post in posts %}
+  <div class="card shadow-sm" style="max-width: 600px; margin-left: 350px;">
+    <div class="card-body" style="min-height: 400px; position: relative; overflow: hidden;">
+
+      <!-- User Info -->
+      <div class="d-flex align-items-center mb-3">
+        <img src="{{ url_for('static', filename='uploads/' + (post.user.profile.profile_pic if post.user.profile else 'default.png')) }}"
+             alt="Profile Picture" class="rounded-circle me-3"
+             style="width: 50px; height: 50px; object-fit: cover;">
+        <div>
+          <strong>{{ post.user.name }}</strong><br>
+          <small class="text-muted">{{ post.timestamp.strftime('%B %d, %Y %I:%M %p') }}</small>
+        </div>
+      </div>
+
+      <!-- Post Content -->
+      <p class="mb-2">{{ post.content }}</p>
+
+      {% if post.image %}
+      <div class="mb-3 text-center">
+        <img src="{{ url_for('static', filename='uploads/' ~ post.image) }}"
+          alt="Post Image"
+          class="img-fluid rounded"
+          style="max-width: 100%; height: auto; max-height: 600px; object-fit: contain;">
+      </div>
+      {% endif %}
+
+
+      <!-- Like Button -->
+      <form action="{{ url_for('like_post', post_id=post.id) }}" method="post" class="mb-3">
+        <button class="btn btn-outline-primary btn-sm" type="submit">
+          ❤️ Like ({{ post.likes | length }})
+        </button>
+      </form>
+
+      <!-- Comments Section -->
+      <div class="comments mb-3">
+        {% for comment in post.comments %}
+        <div class="mb-2">
+          <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Add Comment -->
+      <form action="{{ url_for('comment_post', post_id=post.id) }}" method="post">
+        <div class="d-flex">
+          <textarea name="content" class="form-control me-2" placeholder="Write a comment..." rows="1" required></textarea>
+          <button type="submit" class="btn btn-secondary btn-sm">Comment</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+{% endblock %}

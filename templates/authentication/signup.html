@@ -1,0 +1,48 @@
+{% extends "base/auth.html" %}
+{% block title %} SIGN UP {% endblock %}
+{% block content %}
+{{ super() }}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 left-side">
+            <img src="{{ url_for('static', filename='pets.png') }}" class="img-fluid avatar" alt="Avatar">
+        </div>
+        <div class="col-md-6 right-side">
+            <div class="form-container">
+                <h3 class="text-center mb-4">Create Your Account</h3>
+                <form action="{{ url_for('signup') }}" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name" required>
+                    </div>
+                
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+                    </div>
+                
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+                    </div>
+                
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+                
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-secondary">Register</button>
+                    </div>
+                </form>
+
+                <p class="text-center mt-3">Already have an account? 
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-sm">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, url_for, session, redirect, flash
+from flask import Flask, render_template, request, url_for, session, redirect, flash, g
 from flask_bootstrap import Bootstrap5
 from flask_hashing import Hashing
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Integer, String, Text, ForeignKey, DateTime, or_, and_
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from werkzeug.utils import secure_filename
 import os
@@ -21,6 +21,17 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
+
+@app.before_request
+def load_logged_in_user():
+    user_id = session.get('user_id')
+    if user_id:
+        user = db.session.get(User, user_id)
+        g.user = user
+        g.profile = user.profile if user else None
+    else:
+        g.user = None
+        g.profile = None
 
 
 # ----------------- DATABASE MODELS -----------------
@@ -124,7 +135,6 @@ def home():
         for comment in post.comments:
             comment.user = db.session.get(User, comment.user_id)
         post.likes = Like.query.filter_by(post_id=post.id).all()
-
     return render_template("user/home.html", username=user.username, posts=posts)# Redirect to login if the user is not logged in
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -494,15 +504,43 @@ def delete_friend_request(user_id):
         flash("Friend request declined.", "danger")
     return redirect(url_for('friends'))
 
-
-
 @app.route('/messages')
 def messages():
-    return render_template('user/messages.html')
+    if 'user_id' not in session:
+        flash("Please log in to view messages.", "warning")
+        return redirect(url_for('login'))
 
-@app.route('/chat')
-def chat():
-    return render_template('user/chat.html')
+    user_id = session['user_id']
+    users = User.query.filter(User.id != user_id).all()
+    return render_template('user/messages.html', users=users)
+
+@app.route('/chat/<int:user_id>', methods=['GET', 'POST'])
+def chat(user_id):
+    if 'user_id' not in session:
+        flash("Please log in to chat.", "warning")
+        return redirect(url_for('login'))
+
+    current_user_id = session['user_id']
+    chat_user = User.query.get_or_404(user_id)
+
+    # Sending message
+    if request.method == 'POST':
+        content = request.form['content']
+        if content.strip():
+            message = Message(sender_id=current_user_id, receiver_id=user_id, content=content)
+            db.session.add(message)
+            db.session.commit()
+        return redirect(url_for('chat', user_id=user_id))
+
+    # Fetch chat messages
+    messages = Message.query.filter(
+        or_(
+            and_(Message.sender_id == current_user_id, Message.receiver_id == user_id),
+            and_(Message.sender_id == user_id, Message.receiver_id == current_user_id)
+        )
+    ).order_by(Message.timestamp.asc()).all()
+
+    return render_template('user/chat.html', messages=messages, chat_user=chat_user)
 
 @app.route('/notifications')
 def notification():

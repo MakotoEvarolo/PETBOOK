@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
+<body style="background-color: #888b90;">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="container mt-4">
@@ -21,12 +21,22 @@
       {% endif %}
     {% endwith %}
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
       <div class="container-fluid">
         <div class="navbar-center">
           <img src="{{ url_for('static', filename='petsLogo.png') }}" alt="Avatar">
           <a class="navbar-brand" href="{{ url_for('home') }}">PetBook</a>
         </div>
+
+        {% if g.user and g.profile %}
+        <div class="profile-image-container">
+            {% if g.profile.profile_pic %}
+                <img class="navbar-profile-img" src="{{ url_for('static', filename='uploads/' + g.profile.profile_pic) }}">
+            {% else %}
+                <img class="navbar-profile-img" src="{{ url_for('static', filename='default.jpg') }}">
+            {% endif %}
+        </div>
+        {% endif %}
 
         <div class="collapse navbar-collapse">
           <ul class="navbar-nav">
@@ -76,6 +86,8 @@
         </div>
       </div>
     </nav>
+    
+    <hr class="navbar-divider">   
 
     <div class="container mt-4">
         {% block content %}

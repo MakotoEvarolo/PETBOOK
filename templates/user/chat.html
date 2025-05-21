@@ -1,0 +1,27 @@
+{% extends "base/layout.html" %}
+{% block title %}Chat with {{ chat_user.name }}{% endblock %}
+{% block content %}
+
+<h4 class="mb-4">Chat with {{ chat_user.name }}</h4>
+
+<div class="card mb-3" style="max-height: 500px; overflow-y: auto;">
+  <div class="card-body">
+    {% for msg in messages %}
+      <div class="mb-2">
+        <div class="{% if msg.sender_id == session['user_id'] %}text-end{% endif %}">
+          <span class="badge bg-{{ 'primary' if msg.sender_id == session['user_id'] else 'secondary' }}">
+            {{ msg.content }}
+          </span><br>
+          <small class="text-muted">{{ msg.timestamp.strftime('%b %d, %Y %I:%M %p') }}</small>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<form method="POST" class="d-flex">
+  <input type="text" name="content" class="form-control me-2" placeholder="Type your message..." required>
+  <button type="submit" class="btn btn-primary">Send</button>
+</form>
+
+{% endblock %}

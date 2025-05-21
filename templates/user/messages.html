@@ -1,6 +1,18 @@
 {% extends "base/layout.html" %}
 {% block title %}Messages{% endblock %}
 {% block content %}
-<h2>Messages</h2>
+<h2 class="mb-4">Messages</h2>
 
+<ul class="list-group">
+  {% for user in users %}
+    <li class="list-group-item d-flex align-items-center">
+      <img src="{{ url_for('static', filename='uploads/' + (user.profile.profile_pic if user.profile else 'default.png')) }}"
+           alt="Profile Picture" class="rounded-circle me-2"
+           style="width: 40px; height: 40px; object-fit: cover;">
+      <a href="{{ url_for('chat', user_id=user.id) }}">{{ user.name }}</a>
+    </li>
+  {% else %}
+    <li class="list-group-item text-muted">No users available to message.</li>
+  {% endfor %}
+</ul>
 {% endblock %}

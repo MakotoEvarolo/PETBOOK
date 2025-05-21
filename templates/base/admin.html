@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PetBook - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body style="background-color: #888b90;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="container mt-4">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
+      <div class="container-fluid">
+        <div class="navbar-center">
+          <img src="{{ url_for('static', filename='petsLogo.png') }}" alt="PetBook Logo">
+          <a class="navbar-brand" href="{{ url_for('admin_home') }}">PetBook</a>
+        </div>
+
+        {% if g.user and g.profile %}
+        <div class="profile-image-container">
+            {% if g.profile.profile_pic %}
+                <img class="navbar-profile-img" src="{{ url_for('static', filename='uploads/' + g.profile.profile_pic) }}">
+            {% else %}
+                <img class="navbar-profile-img" src="{{ url_for('static', filename='default.jpg') }}">
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_home') }}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('adoption_post') }}">Adoption Listing</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a> {# Admin-specific link #}
+            </li>
+          </ul>
+
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            {% if session.get('user_id') %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('profile') }}">Profile</a> {# Admins can still view their own profile #}
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('settings') }}">Settings</a> {# Admins can still manage settings #}
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="logoutButton">Logout</a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <hr class="navbar-divider">
+
+    <div class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to log out?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">Yes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById('logoutButton').addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default link behavior
+            var logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
+            logoutModal.show(); // Show the modal
+        });
+    </script>
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,73 @@
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;  
+    margin-top: -20px;
+    background-color: #888b90 !important;
+}
+
+/* Keep navbar-center centered */
+.navbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.navbar-center img {
+  max-width: 90px;
+  margin-right: 10px;
+}
+
+.navbar-brand {
+  font-family: 'IBM Plex Mono';
+  font-size: 3rem;
+}
+
+/* Move profile image to far right */
+.profile-image-container {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.navbar-profile-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.navbar-nav{
+    margin-top: 120px;
+    justify-content: center;
+    margin-left: 750px;
+    gap: 20px; 
+}
+
+.navbar-divider {
+    margin: 0;
+    border: none;
+    border-top: 4px solid #000000; 
+}
+
+/* PROFILE */
+img.rounded-circle {
+    object-fit: cover;
+}
+
+
+/* ADOPTION LISTING */
+.adoption-image {
+    height: 300px;
+    object-fit: cover;
+    width: 100%;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+  

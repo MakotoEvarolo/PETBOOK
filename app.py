@@ -2,11 +2,12 @@ from flask import Flask, render_template, request, url_for, session, redirect, f
 from flask_bootstrap import Bootstrap5
 from flask_hashing import Hashing
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Integer, String, Text, ForeignKey, DateTime, or_, and_
+from sqlalchemy import Integer, String, Text, ForeignKey, DateTime, or_, and_, Boolean
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+from functools import wraps
 
 
 app = Flask(__name__)
@@ -22,25 +23,14 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
-@app.before_request
-def load_logged_in_user():
-    user_id = session.get('user_id')
-    if user_id:
-        user = db.session.get(User, user_id)
-        g.user = user
-        g.profile = user.profile if user else None
-    else:
-        g.user = None
-        g.profile = None
-
-
 # ----------------- DATABASE MODELS -----------------
 class User(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(120), nullable=False)  # New field
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False) # Add this line
 
     profile: Mapped["Profile"] = db.relationship('Profile', back_populates='user', uselist=False, cascade="all, delete")
     
@@ -114,6 +104,130 @@ class Log(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     action: Mapped[str] = mapped_column(Text)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    
+    # ------- DB INITIALIZATION AND ADMIN CREATION ---------
+with app.app_context():
+    db.create_all() # Now db.create_all() knows about the 'User' table
+    admin_user = User.query.filter_by(username='admin').first()
+    if not admin_user:
+        hashed_password = hashing.hash_value('admin123', salt="abcd")
+        new_admin = User(username='admin', name='Administrator', password_hash=hashed_password, email='admin@petbook.com', is_admin=True)
+        db.session.add(new_admin)
+        db.session.commit()
+        new_admin_profile = Profile(user_id=new_admin.id, profile_pic="default.png", bio="PetBook Administrator")
+        db.session.add(new_admin_profile)
+        db.session.commit()
+        print("Admin user created: username='admin', password='admin123'")
+
+@app.before_request
+def load_logged_in_user():
+    user_id = session.get('user_id')
+    if user_id:
+        user = db.session.get(User, user_id)
+        g.user = user
+        g.profile = user.profile if user else None
+    else:
+        g.user = None
+        g.profile = None
+
+# ----------------- ROUTES FOR ADMIN ----------------- 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not g.user or not g.user.is_admin:
+            flash("You do not have permission to access this page.", "danger")
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/admin/home') # New route for admin home
+@admin_required
+def admin_home():
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    # You might fetch different data for the admin home here
+    for post in posts:
+        post.user = db.session.get(User, post.user_id)
+        post.comments = Comment.query.filter_by(post_id=post.id).all()
+        for comment in post.comments:
+            comment.user = db.session.get(User, comment.user_id)
+        post.likes = Like.query.filter_by(post_id=post.id).all()
+    return render_template("admin/home_post.html", username=g.user.username, posts=posts)
+
+@app.route('/admin/adoption_listings')
+@admin_required
+def adoption_post():
+    # You can fetch all adoption posts here, or apply admin-specific filters
+    posts = CreateAdoptionPost.query.all() # Or filter by status if needed
+    return render_template('admin/adoption_post.html', posts=posts)
+
+@app.route('/admin/delete_post/<int:post_id>', methods=['POST'])
+@admin_required
+def admin_delete_post(post_id):
+    post = db.session.get(Post, post_id)
+    if post:
+        # Delete associated likes and comments first
+        Like.query.filter_by(post_id=post_id).delete()
+        Comment.query.filter_by(post_id=post_id).delete()
+        db.session.delete(post)
+        db.session.commit()
+        flash("Post deleted successfully!", "success")
+    else:
+        flash("Post not found.", "danger")
+    return redirect(url_for('home'))
+
+@app.route('/admin/delete_adoption_post/<int:post_id>', methods=['POST'])
+@admin_required
+def admin_delete_adoption_post(post_id):
+    adoption_post = db.session.get(CreateAdoptionPost, post_id)
+    if adoption_post:
+        db.session.delete(adoption_post)
+        db.session.commit()
+        flash("Adoption post deleted successfully!", "success")
+    else:
+        flash("Adoption post not found.", "danger")
+    return redirect(url_for('adoption_listing'))
+
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    user_to_delete = db.session.get(User, user_id)
+
+    if not user_to_delete:
+        flash("User not found.", "danger")
+        return redirect(url_for('home')) # Or redirect to an admin users list page
+
+    if user_to_delete.is_admin and user_to_delete.id != g.user.id:
+        flash("You cannot delete another administrator account.", "danger")
+        return redirect(url_for('home')) # Prevent deleting other admins
+
+    if user_to_delete.id == g.user.id:
+        flash("You cannot delete your own admin account.", "danger")
+        return redirect(url_for('home'))
+
+    username = user_to_delete.username # Store username before deletion for the flash message
+
+    # Delete related data (posts, comments, likes, messages, friends, notifications)
+    # The cascade="all, delete" on the profile relationship handles profile deletion.
+    Post.query.filter_by(user_id=user_id).delete()
+    Comment.query.filter_by(user_id=user_id).delete()
+    Like.query.filter_by(user_id=user_id).delete()
+    Message.query.filter(or_(Message.sender_id == user_id, Message.receiver_id == user_id)).delete()
+    Friend.query.filter(or_(Friend.user1_id == user_id, Friend.user2_id == user_id)).delete()
+    CreateAdoptionPost.query.filter_by(user_id=user_id).delete()
+    Notification.query.filter_by(user_id=user_id).delete()
+    Log.query.filter_by(user_id=user_id).delete()
+
+    db.session.delete(user_to_delete)
+    db.session.commit()
+    flash(f"User '{username}' and all associated data deleted successfully!", "success")
+    return redirect(url_for('home')) # Redirect to home, or an admin dashboard
+
+# Optional: A simple page to list users for admin to delete
+@app.route('/admin/manage_users')
+@admin_required
+def manage_users():
+    users = User.query.all()
+    return render_template('admin/manage_users.html', users=users)
 
 # ----------------- ROUTES -----------------
 @app.route('/')
@@ -180,7 +294,12 @@ def login():
         if user and hashing.check_value(user.password_hash, password, salt="abcd"):
             session['user_id'] = user.id
             flash('Login successful!', 'success')
-            return redirect(url_for('home'))
+            if user.is_admin:
+                return redirect(url_for('manage_users')) # Redirect to admin management page
+            else:
+                return redirect(url_for('home')) # Redirect regular users to home
+        else: # This 'else' correctly handles failed login attempts
+            flash('Invalid username or password.', 'danger')
 
 
         flash('Invalid username or password.', 'danger')

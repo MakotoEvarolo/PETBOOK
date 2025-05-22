@@ -1,0 +1,16 @@
+{% extends "base/admin.html" %}
+{% block content %}
+<h2>Admin Settings</h2>
+<!-- Example: Change password or other settings -->
+<form action="{{ url_for('manage_users') }}" method="POST">
+    <div class="mb-3">
+        <label for="current_password" class="form-label">Current Password</label>
+        <input type="password" class="form-control" id="current_password" name="current_password">
+    </div>
+    <div class="mb-3">
+        <label for="new_password" class="form-label">New Password</label>
+        <input type="password" class="form-control" id="new_password" name="new_password">
+    </div>
+    <button type="submit" class="btn btn-primary">Change Password</button>
+</form>
+{% endblock %}

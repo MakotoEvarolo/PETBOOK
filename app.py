@@ -160,6 +160,20 @@ def adoption_post():
     posts = CreateAdoptionPost.query.all() # Or filter by status if needed
     return render_template('admin/adoption_post.html', posts=posts)
 
+@app.route('/admin/profile')
+@admin_required
+def admin_profile():
+    user = g.user
+    profile = g.profile
+    return render_template('admin/profile.html', user=user, profile=profile)
+
+@app.route('/admin/settings')
+@admin_required
+def admin_settings():
+    user = g.user
+    profile = g.profile
+    return render_template('admin/settings.html', user=user, profile=profile)
+
 @app.route('/admin/delete_post/<int:post_id>', methods=['POST'])
 @admin_required
 def admin_delete_post(post_id):

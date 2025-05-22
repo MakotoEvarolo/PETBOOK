@@ -7,6 +7,12 @@
     background-color: #888b90 !important;
 }
 
+/* Adjust font size for navbar links */
+.navbar .nav-link {
+    font-size: 13px;  /* Change this to your preferred size, e.g., 14px, 18px */
+}
+
+
 /* Keep navbar-center centered */
 .navbar-center {
   display: flex;
@@ -46,7 +52,7 @@
 .navbar-nav{
     margin-top: 120px;
     justify-content: center;
-    margin-left: 550px;
+    margin-left: 420px;
     gap: 20px; 
 }
 
